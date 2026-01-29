@@ -1,0 +1,3717 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITOBE Analytics Dashboard | Стратегический анализ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #19194c;
+            --primary-light: #182d8d;
+            --accent: #be9176;
+            --accent-light: #d4a88a;
+            --gray: #7a899a;
+            --gray-light: #b8c4d0;
+            --dark: #0a0a1a;
+            --light: #f8f9fb;
+            --white: #ffffff;
+            --success: #2d7a5f;
+            --warning: #c4842d;
+            --danger: #a63d3d;
+            --radius-asymmetric: 0 100px 0 0;
+            --radius-asymmetric-bottom: 0 0 100px 0;
+            --radius-small: 0 24px 0 0;
+            --radius-small-bottom: 0 0 24px 0;
+            --shadow-soft: 0 4px 24px rgba(25, 25, 76, 0.08);
+            --shadow-medium: 0 8px 32px rgba(25, 25, 76, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Onest', sans-serif;
+            background: var(--white);
+            color: var(--primary);
+            line-height: 1.7;
+            min-height: 100vh;
+            font-weight: 400;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            padding: 2.5rem 4rem;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.08);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            border-radius: var(--radius-small);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--white);
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.03em;
+        }
+
+        .logo-text span {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        .header-meta {
+            text-align: right;
+        }
+
+        .header-meta .date {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .header-meta .subtitle {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* Horizontal Line Decorator */
+        .line-decorator {
+            height: 1px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, transparent 100%);
+            margin: 0;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            background: var(--white);
+            padding: 0 4rem;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.06);
+        }
+
+        .nav-tabs-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 1.25rem 1.75rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 4rem;
+        }
+
+        /* Section */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(25, 25, 76, 0.15) 0%, transparent 100%);
+            margin-left: 1rem;
+        }
+
+        /* Grid Layouts - Golden Ratio */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1.618fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .cards-grid-reverse {
+            display: grid;
+            grid-template-columns: 1fr 1.618fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .cards-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1200px) {
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+            .cards-grid, .cards-grid-reverse { grid-template-columns: 1fr; }
+            .cards-grid-3 { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .cards-grid-3 { grid-template-columns: 1fr; }
+            .main-container { padding: 2rem 1.5rem; }
+            .header { padding: 1.5rem; }
+            .nav-tabs { padding: 0 1.5rem; }
+        }
+
+        /* Metric Card - Asymmetric */
+        .metric-card {
+            background: var(--white);
+            border-radius: var(--radius-small);
+            padding: 1.75rem;
+            border: 1px solid rgba(25, 25, 76, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            box-shadow: var(--shadow-soft);
+            transform: translateY(-2px);
+        }
+
+        .metric-card:nth-child(even) {
+            border-radius: var(--radius-small-bottom);
+        }
+
+        .metric-card.primary {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-asymmetric);
+        }
+
+        .metric-card.accent {
+            background: var(--white);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-small-bottom);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-card.primary .metric-label {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .metric-card.primary .metric-value {
+            color: var(--white);
+        }
+
+        .metric-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive { color: var(--success); }
+        .metric-change.negative { color: var(--danger); }
+        .metric-change.neutral { color: var(--gray); }
+
+        .metric-card.primary .metric-change { color: var(--accent-light); }
+
+        /* Card - Asymmetric */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-small);
+            overflow: hidden;
+            border: 1px solid rgba(25, 25, 76, 0.08);
+        }
+
+        .card:nth-child(even) {
+            border-radius: var(--radius-small-bottom);
+        }
+
+        .card.featured {
+            border-radius: var(--radius-asymmetric);
+            box-shadow: var(--shadow-medium);
+            border: none;
+        }
+
+        .card.featured-bottom {
+            border-radius: var(--radius-asymmetric-bottom);
+            box-shadow: var(--shadow-medium);
+            border: none;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .card-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            border-radius: 100px;
+            background: var(--light);
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-badge.success { background: rgba(45, 122, 95, 0.1); color: var(--success); }
+        .card-badge.warning { background: rgba(196, 132, 45, 0.1); color: var(--warning); }
+        .card-badge.danger { background: rgba(166, 61, 61, 0.1); color: var(--danger); }
+        .card-badge.accent { background: rgba(190, 145, 118, 0.15); color: var(--accent); }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        .chart-container-sm {
+            height: 220px;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.06);
+        }
+
+        .data-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: var(--light);
+        }
+
+        .data-table td {
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(25, 25, 76, 0.02);
+        }
+
+        .data-table .highlight {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 6px;
+            background: var(--light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-bar-fill.primary { background: var(--primary); }
+        .progress-bar-fill.accent { background: var(--accent); }
+        .progress-bar-fill.success { background: var(--success); }
+        .progress-bar-fill.warning { background: var(--warning); }
+
+        /* Score Display */
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            background: var(--light);
+            border-radius: var(--radius-small);
+            margin-bottom: 1.5rem;
+        }
+
+        .score-circle {
+            width: 88px;
+            height: 88px;
+            border-radius: var(--radius-small);
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .score-details h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .score-details p {
+            font-size: 0.9rem;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* SWOT Grid */
+        .swot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .swot-card {
+            padding: 2rem;
+            border-radius: var(--radius-small);
+            background: var(--white);
+            border: 1px solid rgba(25, 25, 76, 0.08);
+        }
+
+        .swot-card:nth-child(1) { border-radius: var(--radius-asymmetric); border-left: 3px solid var(--success); }
+        .swot-card:nth-child(2) { border-radius: var(--radius-small-bottom); border-left: 3px solid var(--danger); }
+        .swot-card:nth-child(3) { border-radius: var(--radius-small); border-left: 3px solid var(--primary); }
+        .swot-card:nth-child(4) { border-radius: var(--radius-asymmetric-bottom); border-left: 3px solid var(--warning); }
+
+        .swot-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        .swot-card:nth-child(1) h4 { color: var(--success); }
+        .swot-card:nth-child(2) h4 { color: var(--danger); }
+        .swot-card:nth-child(3) h4 { color: var(--primary); }
+        .swot-card:nth-child(4) h4 { color: var(--warning); }
+
+        .swot-card ul {
+            list-style: none;
+            font-size: 0.875rem;
+        }
+
+        .swot-card li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.04);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .swot-card li:last-child {
+            border-bottom: none;
+        }
+
+        .swot-card li::before {
+            content: '—';
+            color: var(--gray-light);
+            flex-shrink: 0;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 1px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.75rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            background: var(--white);
+            border: 2px solid var(--primary);
+        }
+
+        .timeline-item.completed::before { 
+            background: var(--primary);
+        }
+
+        .timeline-item.pending::before { 
+            border-color: var(--accent);
+        }
+
+        .timeline-content h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        .timeline-content p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+
+        /* Recommendations */
+        .recommendation-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border-radius: var(--radius-small);
+            background: var(--light);
+            margin-bottom: 0.875rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .recommendation-item:nth-child(even) {
+            border-radius: var(--radius-small-bottom);
+        }
+
+        .recommendation-item:hover {
+            border-color: rgba(25, 25, 76, 0.1);
+            background: var(--white);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .recommendation-priority {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .recommendation-priority.high { background: var(--danger); color: var(--white); }
+        .recommendation-priority.medium { background: var(--warning); color: var(--white); }
+        .recommendation-priority.low { background: var(--success); color: var(--white); }
+
+        .recommendation-content h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        .recommendation-content p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        /* KPI Cards */
+        .kpi-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.06);
+        }
+
+        .kpi-row:last-child {
+            border-bottom: none;
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .kpi-values {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .kpi-current {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-target {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .kpi-target span {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 0.4rem 0.85rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .tag-primary { background: rgba(25, 25, 76, 0.08); color: var(--primary); }
+        .tag-accent { background: rgba(190, 145, 118, 0.15); color: var(--accent); }
+        .tag-success { background: rgba(45, 122, 95, 0.1); color: var(--success); }
+
+        /* Executive Summary */
+        .exec-summary {
+            background: var(--primary);
+            color: var(--white);
+            border-radius: var(--radius-asymmetric);
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exec-summary::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(190, 145, 118, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .exec-summary h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .exec-summary p {
+            font-size: 1rem;
+            line-height: 1.9;
+            opacity: 0.9;
+            max-width: 800px;
+        }
+
+        .exec-highlights {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 2.5rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .exec-highlight {
+            text-align: left;
+        }
+
+        .exec-highlight-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.03em;
+        }
+
+        .exec-highlight-label {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+            font-weight: 400;
+        }
+
+        /* Comparison Table */
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.06);
+            align-items: center;
+        }
+
+        .comparison-row.header {
+            background: var(--light);
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .comparison-metric {
+            font-weight: 500;
+        }
+
+        .comparison-value {
+            text-align: center;
+            font-family: 'Onest', sans-serif;
+            font-weight: 500;
+        }
+
+        .comparison-value.highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Insight Box */
+        .insight-box {
+            padding: 1.5rem;
+            background: rgba(190, 145, 118, 0.08);
+            border-radius: var(--radius-small);
+            border-left: 3px solid var(--accent);
+            margin-top: 1.5rem;
+        }
+
+        .insight-box strong {
+            color: var(--accent);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary);
+            color: var(--white);
+            padding: 2.5rem 4rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-tabs { display: none; }
+            .section { display: block !important; page-break-after: always; }
+            .card { break-inside: avoid; }
+        }
+
+        /* Status indicators */
+        .status-ok { color: var(--success); }
+        .status-warning { color: var(--warning); }
+        .status-error { color: var(--danger); }
+
+        /* Sub-navigation tabs for content section */
+        .sub-nav-tabs {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(25, 25, 76, 0.08);
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+
+        .sub-nav-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sub-nav-tab:hover {
+            color: var(--primary);
+            background: rgba(25, 25, 76, 0.02);
+        }
+
+        .sub-nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .content-sub-section {
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tag-danger {
+            background: rgba(166, 61, 61, 0.1);
+            color: var(--danger);
+        }
+
+        .tag-warning {
+            background: rgba(196, 132, 45, 0.1);
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">B</div>
+                <div class="logo-text">
+                    <h1>BITOBE Analytics</h1>
+                    <span>Стратегический дашборд</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="date">29 января 2026</div>
+                <div class="subtitle">Аудит соответствия стратегии</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="line-decorator"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <div class="nav-tabs-inner">
+            <div class="nav-tab active" data-section="overview">Обзор</div>
+            <div class="nav-tab" data-section="telegram">Telegram</div>
+            <div class="nav-tab" data-section="blog">Блог</div>
+            <div class="nav-tab" data-section="content">Контент</div>
+            <div class="nav-tab" data-section="strategy-gap">Соответствие стратегии</div>
+            <div class="nav-tab" data-section="swot">SWOT</div>
+            <div class="nav-tab" data-section="strategy">Стратегия</div>
+            <div class="nav-tab" data-section="roadmap">Roadmap</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+            <!-- Executive Summary -->
+            <div class="exec-summary">
+                <h2>Executive Summary</h2>
+                <p>
+                    BITOBE — консалтинговая компания с 20-летним опытом в HR и организационном развитии, позиционирующая себя как 
+                    «Архитектор и драйвер корпоративного развития». Анализ выявил <strong>критический разрыв между стратегией и реализацией</strong>: 
+                    соответствие бренд-платформе составляет лишь 36%. Контентные активы транслируют устаревшую идентичность «HR-консалтинг», 
+                    а не стратегическое позиционирование «Made in Russia, Built for Future». Требуется системная интеграция 
+                    онлайн-оффлайн экосистемы и усиление категории «Оценка» (ЭРА).
+                </p>
+                <div class="exec-highlights">
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">36%</div>
+                        <div class="exec-highlight-label">Соответствие стратегии</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">6.23K</div>
+                        <div class="exec-highlight-label">Подписчиков Telegram</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">520+</div>
+                        <div class="exec-highlight-label">Статей в блоге</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">20</div>
+                        <div class="exec-highlight-label">Лет на рынке</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Ключевые метрики</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card primary">
+                    <div class="metric-label">Соответствие стратегии</div>
+                    <div class="metric-value">36%</div>
+                    <div class="metric-change negative">Критический разрыв</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Telegram</div>
+                    <div class="metric-value">6,230</div>
+                    <div class="metric-change neutral">Цель: 10K (стратегия)</div>
+                </div>
+                <div class="metric-card accent">
+                    <div class="metric-label">Статей</div>
+                    <div class="metric-value">520+</div>
+                    <div class="metric-change neutral">6 лет публикаций</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Категория ЭРА</div>
+                    <div class="metric-value">6%</div>
+                    <div class="metric-change negative">Цель: 15-20%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Внешние авторы</div>
+                    <div class="metric-value">~15%</div>
+                    <div class="metric-change negative">Цель: 50%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Интеграция событий</div>
+                    <div class="metric-value">~10%</div>
+                    <div class="metric-change negative">Цель: 40%</div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card featured">
+                    <div class="card-header">
+                        <h3 class="card-title">Соответствие бренд-платформе</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="score-display">
+                            <div class="score-circle" style="background: var(--danger);">36%</div>
+                            <div class="score-details">
+                                <h4>Критический разрыв</h4>
+                                <p>Стратегия «Архитектор корпоративного развития» не транслируется в контент. Позиционирование «Made in Russia, Built for Future» отсутствует.</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <div class="kpi-row">
+                                <span class="kpi-label">Позиционирование бренда</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">30%</span>
+                                    <div class="progress-bar" style="width: 120px;">
+                                        <div class="progress-bar-fill" style="width: 30%; background: var(--danger);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Контент-стратегия</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">50%</span>
+                                    <div class="progress-bar" style="width: 120px;">
+                                        <div class="progress-bar-fill warning" style="width: 50%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Интеграция онлайн-оффлайн</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">20%</span>
+                                    <div class="progress-bar" style="width: 120px;">
+                                        <div class="progress-bar-fill" style="width: 20%; background: var(--danger);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Техническая база</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">60%</span>
+                                    <div class="progress-bar" style="width: 120px;">
+                                        <div class="progress-bar-fill warning" style="width: 60%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Измерение ROI</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">20%</span>
+                                    <div class="progress-bar" style="width: 120px;">
+                                        <div class="progress-bar-fill" style="width: 20%; background: var(--danger);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Стратегические разрывы</h3>
+                        <span class="card-badge danger">Критично</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">!</div>
+                            <div class="recommendation-content">
+                                <h4>Позиционирование не транслируется</h4>
+                                <p>«Архитектор корпоративного развития» → текущий слоган не соответствует</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">!</div>
+                            <div class="recommendation-content">
+                                <h4>Экосистема не реализована</h4>
+                                <p>Требуется: 40% статей связаны с событиями. Сейчас: ~10%</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">!</div>
+                            <div class="recommendation-content">
+                                <h4>Баланс авторов нарушен</h4>
+                                <p>Требуется: 50% топ-менеджеры клиентов. Сейчас: ~15%</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">!</div>
+                            <div class="recommendation-content">
+                                <h4>Категория ЭРА недопредставлена</h4>
+                                <p>Флагманский продукт: 6% контента вместо 15-20%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Telegram Section -->
+        <section id="telegram" class="section">
+            <h2 class="section-title">Telegram @bitobenewera</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card primary">
+                    <div class="metric-label">Подписчики</div>
+                    <div class="metric-value">6,230</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Фото</div>
+                    <div class="metric-value">583</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Видео</div>
+                    <div class="metric-value">132</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Файлы</div>
+                    <div class="metric-value">61</div>
+                </div>
+                <div class="metric-card accent">
+                    <div class="metric-label">Ссылки</div>
+                    <div class="metric-value">1.1K</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Период</div>
+                    <div class="metric-value">19 мес</div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card featured">
+                    <div class="card-header">
+                        <h3 class="card-title">Показатели вовлечённости</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="engagementChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Топ-5 постов</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Пост</th>
+                                    <th>Просм.</th>
+                                    <th>Реакции</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#пятница (нейросеть)</td>
+                                    <td class="highlight">3,940</td>
+                                    <td>34</td>
+                                </tr>
+                                <tr>
+                                    <td>#пятница (зумеры)</td>
+                                    <td class="highlight">3,270</td>
+                                    <td>~20</td>
+                                </tr>
+                                <tr>
+                                    <td>#пятница (балет)</td>
+                                    <td>1,670</td>
+                                    <td>33</td>
+                                </tr>
+                                <tr>
+                                    <td>Притча о конфетах</td>
+                                    <td>1,560</td>
+                                    <td>46</td>
+                                </tr>
+                                <tr>
+                                    <td>Философия о вызовах</td>
+                                    <td>1,090</td>
+                                    <td>18</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid-reverse">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Распределение контента</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container chart-container-sm">
+                            <canvas id="contentDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card featured-bottom">
+                    <div class="card-header">
+                        <h3 class="card-title">Рубрики канала</h3>
+                        <span class="card-badge accent">15+ рубрик</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <span class="tag tag-primary">#минутка_рефлексии</span>
+                            <span class="tag tag-accent">#пятница</span>
+                            <span class="tag tag-primary">#философия_для_бизнеса</span>
+                            <span class="tag tag-primary">#притча_для_бизнеса</span>
+                            <span class="tag tag-primary">#исторические_кейсы</span>
+                            <span class="tag tag-primary">#от_первого_лица</span>
+                            <span class="tag tag-primary">#рекомендации_от_коуча</span>
+                            <span class="tag tag-primary">#рынок_труда</span>
+                            <span class="tag tag-primary">#цифры</span>
+                            <span class="tag tag-primary">#исследование</span>
+                            <span class="tag tag-primary">#инструменты</span>
+                            <span class="tag tag-success">#20bitobe_прошлое</span>
+                            <span class="tag tag-success">#20bitobe_настоящее</span>
+                            <span class="tag tag-success">#20bitobe_будущее</span>
+                        </div>
+                        <div class="insight-box">
+                            <strong>Инсайт:</strong> Формат <strong>#пятница</strong> показывает рекордный охват (до 3.94K) — 
+                            рекомендуется увеличить частоту с 1 до 2 раз в неделю.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blog" class="section">
+            <h2 class="section-title">Блог blog.bitobe.ru</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card primary">
+                    <div class="metric-label">Всего статей</div>
+                    <div class="metric-value">520+</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Категорий</div>
+                    <div class="metric-value">6</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Период</div>
+                    <div class="metric-value">6 лет</div>
+                </div>
+                <div class="metric-card accent">
+                    <div class="metric-label">Топ статья</div>
+                    <div class="metric-value">3,537</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Частота</div>
+                    <div class="metric-value">2-3/нед</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Время чтения</div>
+                    <div class="metric-value">5-10 мин</div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card featured">
+                    <div class="card-header">
+                        <h3 class="card-title">Распределение по категориям</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Топ-10 статей</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0; max-height: 380px; overflow-y: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Статья</th>
+                                    <th>Просм.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ответственность за результат</td>
+                                    <td class="highlight">3,537</td>
+                                </tr>
+                                <tr>
+                                    <td>Главные роли управленца</td>
+                                    <td class="highlight">1,574</td>
+                                </tr>
+                                <tr>
+                                    <td>HR-презентации</td>
+                                    <td>1,282</td>
+                                </tr>
+                                <tr>
+                                    <td>Операционная модель</td>
+                                    <td>1,116</td>
+                                </tr>
+                                <tr>
+                                    <td>Карьерные консультации</td>
+                                    <td>838</td>
+                                </tr>
+                                <tr>
+                                    <td>ИИ в обучении</td>
+                                    <td>769</td>
+                                </tr>
+                                <tr>
+                                    <td>Сопротивление изменениям</td>
+                                    <td>720</td>
+                                </tr>
+                                <tr>
+                                    <td>ИИ в стратегических сессиях</td>
+                                    <td>625</td>
+                                </tr>
+                                <tr>
+                                    <td>Сила слабых связей</td>
+                                    <td>608</td>
+                                </tr>
+                                <tr>
+                                    <td>Управленческая эволюция</td>
+                                    <td>584</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">SEO-аудит</h3>
+                        <span class="card-badge warning">6/10</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="kpi-row">
+                            <span class="kpi-label">Title теги</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ OK</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Meta Description</span>
+                            <span class="status-warning" style="font-weight: 600;">⚠ >160</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Canonical URL</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ OK</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">OpenGraph</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ OK</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Schema.org</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Sitemap.xml</span>
+                            <span class="status-error" style="font-weight: 600;">✗ 500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">UX-проблемы</h3>
+                        <span class="card-badge warning">7/10</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="kpi-row">
+                            <span class="kpi-label">Оглавление</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Прогресс-бар</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Фильтры</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Email-подписка</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Шаринг</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Похожие статьи</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ 3 шт.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Конверсия</h3>
+                        <span class="card-badge danger">5/10</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="kpi-row">
+                            <span class="kpi-label">TG-баннер</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ Есть</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">CTA</span>
+                            <span class="status-ok" style="font-weight: 600;">✓ Есть</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Лид-магниты</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Чек-листы</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Воронка</span>
+                            <span class="status-error" style="font-weight: 600;">✗ Нет</span>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Лид-трекинг</span>
+                            <span class="status-warning" style="font-weight: 600;">?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Analysis Section - COMPREHENSIVE -->
+        <section id="content" class="section">
+            <h2 class="section-title">Комплексный контент-анализ</h2>
+            
+            <!-- Sub-navigation for content section -->
+            <div class="sub-nav-tabs" style="margin-bottom: 2rem; border-bottom: 1px solid rgba(25, 25, 76, 0.08); display: flex; gap: 0; flex-wrap: wrap;">
+                <div class="sub-nav-tab active" data-content-tab="content-overview" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Обзор</div>
+                <div class="sub-nav-tab" data-content-tab="content-telegram" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Telegram</div>
+                <div class="sub-nav-tab" data-content-tab="content-blog" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Блог</div>
+                <div class="sub-nav-tab" data-content-tab="content-gaps" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Пробелы и тренды</div>
+                <div class="sub-nav-tab" data-content-tab="content-plan" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Контент-план</div>
+                <div class="sub-nav-tab" data-content-tab="content-speakers" style="padding: 1rem 1.5rem; font-weight: 500; font-size: 0.85rem; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s ease;">Спикеры</div>
+            </div>
+
+            <!-- OVERVIEW SUB-TAB -->
+            <div id="content-overview" class="content-sub-section active">
+                <!-- Summary metrics -->
+                <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 2rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">Telegram</div>
+                        <div class="metric-value" style="color: var(--primary);">6,230</div>
+                        <div class="metric-change positive">подписчиков</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Блог статей</div>
+                        <div class="metric-value" style="color: var(--primary);">520+</div>
+                        <div class="metric-change positive">за 6 лет</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">ТОП-статья</div>
+                        <div class="metric-value" style="color: var(--success);">3,537</div>
+                        <div class="metric-change positive">просмотров</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Категорий блога</div>
+                        <div class="metric-value" style="color: var(--primary);">6</div>
+                        <div class="metric-change">тематик</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Категория ЭРА</div>
+                        <div class="metric-value" style="color: var(--danger);">6%</div>
+                        <div class="metric-change negative">недопредставлена</div>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card featured">
+                        <div class="card-header">
+                            <h3 class="card-title">Паттерны успешного контента</h3>
+                            <span class="card-badge success">Инсайты</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.06);">
+                                <div class="recommendation-priority" style="background: var(--success);">1</div>
+                                <div class="recommendation-content">
+                                    <h4>Юмористические #пятница посты (TG)</h4>
+                                    <p>Рекордный охват до 3.94K, максимум реакций. Виральный эффект.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.06);">
+                                <div class="recommendation-priority" style="background: var(--success);">2</div>
+                                <div class="recommendation-content">
+                                    <h4>Практические инструменты (Блог)</h4>
+                                    <p>Статьи «как», «инструмент» в топе: до 3,537 просмотров. Оптимальный объём: 2000-3800 слов.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.06);">
+                                <div class="recommendation-priority" style="background: var(--success);">3</div>
+                                <div class="recommendation-content">
+                                    <h4>AI и актуальные темы</h4>
+                                    <p>Статьи про ИИ стабильно в топе: 625-769 просмотров. Импортозамещение — востребованная тема.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.06);">
+                                <div class="recommendation-priority" style="background: var(--success);">4</div>
+                                <div class="recommendation-content">
+                                    <h4>Соавторство и экспертиза</h4>
+                                    <p>Статьи с 2-4 авторами получают 300+ просмотров. Научное обоснование увеличивает доверие.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Что работает хуже</h3>
+                            <span class="card-badge warning">Доработка</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">▼</div>
+                                <div class="recommendation-content">
+                                    <h4>Категория «Оценка» — 6%</h4>
+                                    <p>Флагманский продукт ЭРА недопредставлен. Цель: 15-20%</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">▼</div>
+                                <div class="recommendation-content">
+                                    <h4>Абстрактные заголовки</h4>
+                                    <p>66-107 просмотров. Нет конкретики, нет провокации.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">▼</div>
+                                <div class="recommendation-content">
+                                    <h4>Статьи 15+ минут</h4>
+                                    <p>200-400 просмотров. Требуют разбивки на серии.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">▼</div>
+                                <div class="recommendation-content">
+                                    <h4>10 трендов 2025-2026 НЕ освещены</h4>
+                                    <p>Текучка, выгорание, гибридная работа — огромный разрыв.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Сравнение: Успешные vs. Неуспешные статьи</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Характеристика</th>
+                                    <th style="color: var(--danger);">Низкопросматриваемые (66-107)</th>
+                                    <th style="color: var(--success);">Топовые (300+)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Заголовок</strong></td>
+                                    <td>Абстрактный</td>
+                                    <td>Конкретный, провокативный</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Объём</strong></td>
+                                    <td>1200-1500 слов</td>
+                                    <td>2000-3800 слов</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Научность</strong></td>
+                                    <td>Нет цитат</td>
+                                    <td>Есть исследования (3+)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Авторитет</strong></td>
+                                    <td>1 автор</td>
+                                    <td>2-4 авторов</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Тайминг</strong></td>
+                                    <td>«Вечный» контент</td>
+                                    <td>Свежий, актуальный</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Практика</strong></td>
+                                    <td>Общие принципы</td>
+                                    <td>Конкретные кейсы</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELEGRAM SUB-TAB -->
+            <div id="content-telegram" class="content-sub-section" style="display: none;">
+                <div class="cards-grid">
+                    <div class="card featured">
+                        <div class="card-header">
+                            <h3 class="card-title">Тематические категории (Telegram)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="tgCategoriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Эффективность форматов</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="formatEffectivenessChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Рубрики Telegram</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span class="tag tag-primary">#минутка_рефлексии</span>
+                                <span class="tag tag-primary">#философия_для_бизнеса</span>
+                                <span class="tag tag-primary">#притча_для_бизнеса</span>
+                                <span class="tag tag-primary">#исторические_кейсы</span>
+                                <span class="tag tag-accent">#от_первого_лица</span>
+                                <span class="tag tag-accent">#рекомендации_от_коуча</span>
+                                <span class="tag tag-success">#пятница</span>
+                                <span class="tag tag-primary">#рынок_труда</span>
+                                <span class="tag tag-primary">#цифры</span>
+                                <span class="tag tag-primary">#исследование</span>
+                                <span class="tag tag-accent">#инструменты</span>
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                <h4 style="font-size: 0.9rem; color: var(--gray); margin-bottom: 0.75rem;">Юбилейные рубрики (20 лет)</h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <span class="tag" style="background: rgba(190, 145, 118, 0.1); color: var(--accent);">#20bitobe_прошлое</span>
+                                    <span class="tag" style="background: rgba(190, 145, 118, 0.1); color: var(--accent);">#20bitobe_настоящее</span>
+                                    <span class="tag" style="background: rgba(190, 145, 118, 0.1); color: var(--accent);">#20bitobe_будущее</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card featured-bottom">
+                        <div class="card-header">
+                            <h3 class="card-title">ТОП-5 постов Telegram</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Пост</th>
+                                        <th>Просмотры</th>
+                                        <th>Реакции</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>#пятница (нейросеть и мотивация)</td>
+                                        <td><strong style="color: var(--success);">3.94K</strong></td>
+                                        <td>34</td>
+                                    </tr>
+                                    <tr>
+                                        <td>#пятница (зумеры и командная работа)</td>
+                                        <td><strong>3.27K</strong></td>
+                                        <td>~20</td>
+                                    </tr>
+                                    <tr>
+                                        <td>#пятница (нейросеть и балет)</td>
+                                        <td>1.67K</td>
+                                        <td>33 (29🤣)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Притча о конфетах</td>
+                                        <td>1.56K</td>
+                                        <td>46 (35🔥)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Философский текст о вызовах</td>
+                                        <td>1.09K</td>
+                                        <td>18</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOG SUB-TAB -->
+            <div id="content-blog" class="content-sub-section" style="display: none;">
+                <!-- Blog metrics -->
+                <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">Всего статей</div>
+                        <div class="metric-value" style="color: var(--primary);">520+</div>
+                        <div class="metric-change">публикаций</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Период</div>
+                        <div class="metric-value" style="color: var(--primary);">6+</div>
+                        <div class="metric-change">лет (2020-2026)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Частота</div>
+                        <div class="metric-value" style="color: var(--success);">2-3</div>
+                        <div class="metric-change">статьи в неделю</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Категорий</div>
+                        <div class="metric-value" style="color: var(--primary);">6</div>
+                        <div class="metric-change">тематик</div>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card featured">
+                        <div class="card-header">
+                            <h3 class="card-title">Категории блога</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="blogCategoriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Кластеры эффективности</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.1); border-left: 4px solid var(--success);">
+                                <div class="recommendation-content">
+                                    <h4 style="color: var(--success);">ВИРУСНЫЙ (500+ просмотров)</h4>
+                                    <p>2000-3800 слов, 2+ авторов, 3+ исследования, свежий угол на вечную тему</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(25, 25, 76, 0.05); border-left: 4px solid var(--primary);">
+                                <div class="recommendation-content">
+                                    <h4 style="color: var(--primary);">ПРОЧНЫЙ (300-400 просмотров)</h4>
+                                    <p>2000+ слов, 1-2 эксперта, инструменты и кейсы</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(196, 132, 45, 0.1); border-left: 4px solid var(--warning);">
+                                <div class="recommendation-content">
+                                    <h4 style="color: var(--warning);">СТАБИЛЬНЫЙ (200-300 просмотров)</h4>
+                                    <p>1500-2000 слов, 1 автор, примеры и истории</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item" style="background: rgba(166, 61, 61, 0.1); border-left: 4px solid var(--danger);">
+                                <div class="recommendation-content">
+                                    <h4 style="color: var(--danger);">СЛАБЫЙ (&lt;200 просмотров)</h4>
+                                    <p>1200-1500 слов, 1 автор, общие принципы без новизны</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOP-10 Blog articles -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">ТОП-10 статей блога по просмотрам</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Статья</th>
+                                    <th>Категория</th>
+                                    <th>Просмотры</th>
+                                    <th>Время</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><strong>Ответственность за результат в масштабе корпоративной культуры</strong></td>
+                                    <td><span class="tag tag-primary">Система управления</span></td>
+                                    <td><strong style="color: var(--success);">3,537</strong></td>
+                                    <td>9 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Главные роли управленца: руководитель, эксперт, модератор</td>
+                                    <td><span class="tag tag-accent">Команды</span></td>
+                                    <td><strong>1,574</strong></td>
+                                    <td>5 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>HR-презентации как инструмент управления человеческим капиталом</td>
+                                    <td><span class="tag tag-primary">Коммуникации</span></td>
+                                    <td>1,282</td>
+                                    <td>6 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>Операционная модель: инструмент, который превращает стратегию в результат</td>
+                                    <td><span class="tag tag-primary">Система управления</span></td>
+                                    <td>1,116</td>
+                                    <td>10 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>Карьерные консультации для развития команды</td>
+                                    <td><span class="tag tag-accent">Команды</span></td>
+                                    <td>838</td>
+                                    <td>5 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>ИИ на службе корпоративного обучения: эра взросления</td>
+                                    <td><span class="tag tag-success">Изменения</span></td>
+                                    <td>769</td>
+                                    <td>7 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>Как преодолеть сопротивление сотрудников изменениям</td>
+                                    <td><span class="tag tag-success">Изменения</span></td>
+                                    <td>720</td>
+                                    <td>9 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>Как искусственный интеллект меняет стратегические сессии</td>
+                                    <td><span class="tag tag-success">Изменения</span></td>
+                                    <td>625</td>
+                                    <td>5 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>Сила слабых связей. Теория Марка Грановеттера</td>
+                                    <td><span class="tag tag-primary">Коммуникации</span></td>
+                                    <td>608</td>
+                                    <td>6 мин</td>
+                                </tr>
+                                <tr>
+                                    <td>10</td>
+                                    <td>Управленческая эволюция. Почему изменения в компаниях проваливаются</td>
+                                    <td><span class="tag tag-success">Изменения</span></td>
+                                    <td>584</td>
+                                    <td>9 мин</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Formula for successful headline -->
+                <div class="cards-grid" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Формула успешного заголовка</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="background: var(--light); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; font-family: monospace; font-size: 0.9rem;">
+                                [Глагол/Вопрос] + [Проблема] + [Или] + [Потенциальное решение]
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <p style="color: var(--success); margin-bottom: 0.5rem;">✅ <strong>Работает:</strong></p>
+                                <ul style="margin-left: 1.5rem; color: var(--gray); font-size: 0.9rem;">
+                                    <li>«Управленческая эволюция. Почему изменения проваливаются»</li>
+                                    <li>«Адаптивный потенциал лидера: как оценивать и развивать»</li>
+                                    <li>«Будущее оценки лидерства: что приходит на смену Hogan»</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p style="color: var(--danger); margin-bottom: 0.5rem;">❌ <strong>Не работает:</strong></p>
+                                <ul style="margin-left: 1.5rem; color: var(--gray); font-size: 0.9rem;">
+                                    <li>«Культура согласия: как управлять большой командой» (слишком общее)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card featured-bottom">
+                        <div class="card-header">
+                            <h3 class="card-title">Лучшие вводные слова</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Слово</th>
+                                        <th>Эффект</th>
+                                        <th>Пример</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>«Почему»</strong></td>
+                                        <td>Вызов, интрига</td>
+                                        <td>«Почему изменения проваливаются»</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>«Как»</strong></td>
+                                        <td>Практика</td>
+                                        <td>«Как оценивать и развивать»</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>«Что»</strong></td>
+                                        <td>Открытие</td>
+                                        <td>«Что приходит на смену Hogan»</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>«Или»</strong></td>
+                                        <td>Контраст</td>
+                                        <td>«...или скрытый риск?»</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Число</strong></td>
+                                        <td>Конкретика</td>
+                                        <td>«5 составляющих», «8 инструментов»</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time-reading correlation -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Время чтения vs. Вовлечённость</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Время чтения</th>
+                                    <th>Доля статей</th>
+                                    <th>Средние просмотры</th>
+                                    <th>Рекомендация</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2-5 мин</td>
+                                    <td>~30%</td>
+                                    <td>300-500</td>
+                                    <td><span class="tag tag-accent">Оптимально для соцсетей</span></td>
+                                </tr>
+                                <tr style="background: rgba(45, 122, 95, 0.08);">
+                                    <td><strong>5-10 мин</strong></td>
+                                    <td><strong>~50%</strong></td>
+                                    <td><strong>400-800</strong></td>
+                                    <td><span class="tag tag-success">Оптимально для SEO</span></td>
+                                </tr>
+                                <tr>
+                                    <td>10-15 мин</td>
+                                    <td>~15%</td>
+                                    <td>300-600</td>
+                                    <td><span class="tag tag-warning">Добавить оглавление</span></td>
+                                </tr>
+                                <tr>
+                                    <td>15+ мин</td>
+                                    <td>~5%</td>
+                                    <td>200-400</td>
+                                    <td><span class="tag tag-danger">Разбить на серию</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAPS & TRENDS SUB-TAB -->
+            <div id="content-gaps" class="content-sub-section" style="display: none;">
+                <!-- Critical alert -->
+                <div class="exec-summary" style="background: var(--danger); margin-bottom: 2rem;">
+                    <h2>Критический разрыв: Тренды 2025-2026 НЕ освещены</h2>
+                    <p>
+                        Огромный разрыв между поисковым спросом и контентом блога. 10 ключевых HR-трендов 2025-2026 годов 
+                        практически не представлены в блоге BITOBE, что приводит к потере органического трафика и лидов.
+                    </p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card featured">
+                        <div class="card-header">
+                            <h3 class="card-title">Тренды 2025-2026, НЕ освещённые в блоге</h3>
+                            <span class="card-badge danger">Критично</span>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Тренд</th>
+                                        <th>Статус</th>
+                                        <th>Потенциал</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Производительность и операционная эффективность</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td><strong>Тренд #1 на 2026</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Развитие бренда работодателя</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>73% компаний делают ставку</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>Удержание через линейного менеджера</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>55% CHRO хотят это</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>Антихрупкость сотрудников</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>Растущий интерес</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>Текучка кадров (25-30% в 2025)</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td><strong>Острая боль</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>Ментальное здоровье и выгорание</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>64% россиян испытывают выгорание</td>
+                                    </tr>
+                                    <tr>
+                                        <td>7</td>
+                                        <td>Наставничество и менторинг</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>Впервые в топ-трендов</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8</td>
+                                        <td>HR-аналитика и data-driven решения</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>Растущий запрос</td>
+                                    </tr>
+                                    <tr>
+                                        <td>9</td>
+                                        <td>Медиация и конфликт-менеджмент</td>
+                                        <td><span class="tag tag-danger">❌ Нет</span></td>
+                                        <td>Актуально в 2025-2026</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10</td>
+                                        <td>Гибридная работа и управление</td>
+                                        <td><span class="tag tag-warning">⚠️ Слабо</span></td>
+                                        <td><strong>Критичная тема</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">GAP-анализ: Спрос vs. Контент</h3>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Тема</th>
+                                        <th>Запросов</th>
+                                        <th>Статей</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Удержание персонала</td>
+                                        <td><span class="tag tag-success">Высокий</span></td>
+                                        <td><span class="tag tag-danger">~1</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Текучка кадров</td>
+                                        <td><span class="tag tag-success">Высокий</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ментальное выгорание</td>
+                                        <td><span class="tag tag-success">Высокий</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Гибридная работа</td>
+                                        <td><span class="tag tag-success">Высокий</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Конфликты и медиация</td>
+                                        <td><span class="tag tag-warning">Средний</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Наставничество</td>
+                                        <td><span class="tag tag-warning">Средний</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Бренд работодателя</td>
+                                        <td><span class="tag tag-success">Высокий</span></td>
+                                        <td><span class="tag tag-danger">0</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category gaps -->
+                <div class="cards-grid-3" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Система управления</h3>
+                            <span class="card-badge warning">Пробелы</span>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;"><strong>Хорошо освещено:</strong> Культура согласия, Социальные пакеты, Роли руководителя</p>
+                            <p style="color: var(--danger); font-size: 0.85rem;"><strong>Критические пробелы:</strong></p>
+                            <ul style="margin-left: 1rem; font-size: 0.85rem; color: var(--primary);">
+                                <li>Делегирование и микроменеджмент</li>
+                                <li>Управление удалёнными командами</li>
+                                <li>Организационный дизайн</li>
+                                <li>Производительность (тренд #1)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Развитие людей</h3>
+                            <span class="card-badge warning">Пробелы</span>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;"><strong>Хорошо освещено:</strong> Целеполагание, Адаптивный потенциал</p>
+                            <p style="color: var(--danger); font-size: 0.85rem;"><strong>Критические пробелы:</strong></p>
+                            <ul style="margin-left: 1rem; font-size: 0.85rem; color: var(--primary);">
+                                <li>Наставничество (тренд 2026)</li>
+                                <li>Личный бренд лидера</li>
+                                <li>Soft skills (эмпатия, EQ)</li>
+                                <li>Women in leadership</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Коммуникации</h3>
+                            <span class="card-badge danger">⚠️ Критично</span>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem;"><strong>КАТЕГОРИЯ ПРАКТИЧЕСКИ ПУСТА!</strong></p>
+                            <p style="color: var(--danger); font-size: 0.85rem;"><strong>Нужно срочно создавать:</strong></p>
+                            <ul style="margin-left: 1rem; font-size: 0.85rem; color: var(--primary);">
+                                <li>Внутрикорпоративные коммуникации</li>
+                                <li>Коммуникация изменений</li>
+                                <li>Психологическая безопасность</li>
+                                <li>Культура feedback</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT PLAN SUB-TAB -->
+            <div id="content-plan" class="content-sub-section" style="display: none;">
+                <!-- Summary -->
+                <div class="exec-summary" style="background: var(--primary); margin-bottom: 2rem;">
+                    <h2>Приоритизированный контент-план на 6 месяцев</h2>
+                    <p>
+                        План создания 31 нового материала для закрытия контентных пробелов и усиления SEO-позиций. 
+                        Фокус на трендах 2025-2026 и темах с высоким поисковым спросом.
+                    </p>
+                    <div class="exec-highlights">
+                        <div class="exec-highlight">
+                            <div class="exec-highlight-value">19</div>
+                            <div class="exec-highlight-label">Новых статей</div>
+                        </div>
+                        <div class="exec-highlight">
+                            <div class="exec-highlight-value">7</div>
+                            <div class="exec-highlight-label">Расширений серий</div>
+                        </div>
+                        <div class="exec-highlight">
+                            <div class="exec-highlight-value">5</div>
+                            <div class="exec-highlight-label">Лид-магнитов</div>
+                        </div>
+                        <div class="exec-highlight">
+                            <div class="exec-highlight-value">31</div>
+                            <div class="exec-highlight-label">Всего материалов</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cards-grid-3">
+                    <div class="card" style="border-top: 4px solid var(--danger);">
+                        <div class="card-header">
+                            <h3 class="card-title">Фаза 1: СРОЧНО</h3>
+                            <span class="card-badge danger">30 дней • 5 статей</span>
+                        </div>
+                        <div class="card-body">
+                            <ol style="margin-left: 1rem; font-size: 0.9rem;">
+                                <li style="margin-bottom: 0.75rem;"><strong>«Почему текут таланты: 5 причин убытия»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Аналитика + инфографика</span></li>
+                                <li style="margin-bottom: 0.75rem;"><strong>«Гибридная работа: как управлять командой»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Практический гайд</span></li>
+                                <li style="margin-bottom: 0.75rem;"><strong>«Синдром выгорания лидера»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Диагностика + quiz</span></li>
+                                <li style="margin-bottom: 0.75rem;"><strong>«Медиация конфликтов»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Методический гайд</span></li>
+                                <li><strong>«Наставничество как система»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Пошаговый гайд</span></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="card" style="border-top: 4px solid var(--warning);">
+                        <div class="card-header">
+                            <h3 class="card-title">Фаза 2: ВАЖНО</h3>
+                            <span class="card-badge warning">Месяц 2-3 • 6 статей</span>
+                        </div>
+                        <div class="card-body">
+                            <ol style="margin-left: 1rem; font-size: 0.9rem;" start="6">
+                                <li style="margin-bottom: 0.75rem;"><strong>«Операционная эффективность»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Стратегия + case study</span></li>
+                                <li style="margin-bottom: 0.75rem;"><strong>«Employer branding: работодатель мечты»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Пошаговая инструкция</span></li>
+                                <li style="margin-bottom: 0.75rem;"><strong>СЕРИЯ «Внутренние коммуникации»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">3 статьи</span></li>
+                                <li><strong>«Антихрупкость команды»</strong><br><span style="color: var(--gray); font-size: 0.8rem;">Практический гайд</span></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="card" style="border-top: 4px solid var(--success);">
+                        <div class="card-header">
+                            <h3 class="card-title">Фаза 3: ДОПОЛНЕНИЕ</h3>
+                            <span class="card-badge success">Месяц 4-6 • 8 статей</span>
+                        </div>
+                        <div class="card-body">
+                            <ol style="margin-left: 1rem; font-size: 0.9rem;" start="12">
+                                <li style="margin-bottom: 0.5rem;"><strong>«HR-аналитика для руководителя»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«Роль руководителя в удержании»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«High performers vs. struggling»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«Обучение ИИ для руководителей»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«Психологическая безопасность»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«Первые 100 дней руководителя»</strong></li>
+                                <li style="margin-bottom: 0.5rem;"><strong>«Сопротивление изменениям»</strong></li>
+                                <li><strong>«Методологии оценки: от HOGAN»</strong></li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lead magnets -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Лид-магниты (PDF/Downloads)</h3>
+                        <span class="card-badge accent">Лидогенерация</span>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Название</th>
+                                    <th>Формат</th>
+                                    <th>Потенциал</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><strong>Чек-лист «50 признаков здоровой команды»</strong></td>
+                                    <td>PDF</td>
+                                    <td><span class="tag tag-success">High conversion</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td><strong>Template «1-on-1 встреча для удержания»</strong></td>
+                                    <td>Notion/Google</td>
+                                    <td><span class="tag tag-success">Practical</span></td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td><strong>Матрица «Разговоры с типами сотрудников»</strong></td>
+                                    <td>PDF</td>
+                                    <td><span class="tag tag-success">Actionable</span></td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td><strong>Дорожная карта «Трансформация управления в 2025»</strong></td>
+                                    <td>PDF</td>
+                                    <td><span class="tag tag-primary">Strategic</span></td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td><strong>Оценка «Гибридная готовность команды»</strong></td>
+                                    <td>Interactive</td>
+                                    <td><span class="tag tag-accent">Interactive</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Series expansion -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Расширение существующего контента в серии</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Оригинальная статья</th>
+                                    <th>Расширение (серия)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>«Адаптивный потенциал лидера»</strong></td>
+                                    <td>Часть 2: «Как оценить в интервью», Часть 3: «Программы развития», Часть 4: «Case studies»</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>«Культура согласия»</strong></td>
+                                    <td>«Когда согласие вредит: баланс между единством и критикой»</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>«ИИ-агент в команде»</strong></td>
+                                    <td>Часть 2: «Подготовка команды к ИИ», Часть 3: «Legal и этика AI»</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPEAKERS SUB-TAB -->
+            <div id="content-speakers" class="content-sub-section" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ключевые спикеры BITOBE</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Должность</th>
+                                    <th>Экспертиза</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Александр Пронин</strong></td>
+                                    <td>Руководитель практики развития людей</td>
+                                    <td><span class="tag tag-primary">Развитие</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Марина Кулаковская</strong></td>
+                                    <td>Руководитель практики оргразвития</td>
+                                    <td><span class="tag tag-primary">HR</span><span class="tag tag-accent">Оргразвитие</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Наталия Боровикова</strong></td>
+                                    <td>Директор по устойчивому развитию</td>
+                                    <td><span class="tag tag-success">Стратегия</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Николай Котов</strong></td>
+                                    <td>Директор по развитию ЭРА</td>
+                                    <td><span class="tag tag-accent">ЭРА</span><span class="tag tag-primary">Оценка</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Светлана Скакун</strong></td>
+                                    <td>Руководитель практики коучинга</td>
+                                    <td><span class="tag tag-primary">Коучинг</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Олеся Нагапетян</strong></td>
+                                    <td>Руководитель визуального консалтинга</td>
+                                    <td><span class="tag tag-accent">Визуализация</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Дарья Сметанина</strong></td>
+                                    <td>Руководитель бизнес-презентаций</td>
+                                    <td><span class="tag tag-primary">Презентации</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Екатерина Петрова</strong></td>
+                                    <td>Лидер проектов ЭРА</td>
+                                    <td><span class="tag tag-accent">ЭРА</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- External authors recommendation -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Рекомендация: Привлечение внешних авторов</h3>
+                        <span class="card-badge warning">Стратегический разрыв</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="recommendation-item" style="background: rgba(196, 132, 45, 0.08);">
+                            <div class="recommendation-content">
+                                <h4>Текущее состояние: ~15% внешних авторов</h4>
+                                <p>Блог воспринимается как корпоративный, а не как платформа сообщества.</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item" style="background: rgba(45, 122, 95, 0.08);">
+                            <div class="recommendation-content">
+                                <h4>Целевое состояние: 50% внешних авторов</h4>
+                                <p>Топ-менеджеры клиентов, HR-директора, внешние партнёры должны составлять половину авторов.</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <p style="font-size: 0.9rem; color: var(--gray);">
+                                <strong>Выявленные внешние авторы:</strong> Екатерина Серебреникова (Директор по персоналу «ЕвроХим»), 
+                                Сергей Вакуленко (Европейский институт), Кирилл Поздняков (независимый эксперт)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Gap Section -->
+        <section id="strategy-gap" class="section">
+            <h2 class="section-title">Соответствие стратегии BITOBE</h2>
+            
+            <!-- Strategic Positioning Gap -->
+            <div class="exec-summary" style="background: var(--danger); margin-bottom: 2rem;">
+                <h2>Ключевой вывод: Разрыв между стратегией и реализацией</h2>
+                <p>
+                    Стратегические документы BITOBE описывают амбициозную модель: «Архитектор и драйвер корпоративного развития», 
+                    позиционирование «Made in Russia, Built for Future», интегрированная экосистема контента с 50% внешних авторов 
+                    и 40% статей, связанных с событиями. Однако контентные активы работают в режиме обычного «корпоративного контент-маркетинга», 
+                    не транслируя стратегическое позиционирование.
+                </p>
+                <div class="exec-highlights">
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">30%</div>
+                        <div class="exec-highlight-label">Позиционирование бренда</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">50%</div>
+                        <div class="exec-highlight-label">Контент-стратегия</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">20%</div>
+                        <div class="exec-highlight-label">Интеграция онлайн-оффлайн</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">20%</div>
+                        <div class="exec-highlight-label">Измерение ROI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card featured">
+                    <div class="card-header">
+                        <h3 class="card-title">GAP: Позиционирование бренда</h3>
+                        <span class="card-badge danger">30%</span>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Стратегия (TO-BE)</th>
+                                    <th>Текущее (AS-IS)</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Суть бренда</strong></td>
+                                    <td>«Архитектор и драйвер корпоративного развития»</td>
+                                    <td>«Для бизнес-лидеров и HR-директоров»</td>
+                                    <td><span class="status-error">✗</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ключевое сообщение</strong></td>
+                                    <td>«Made in Russia, Built for Future»</td>
+                                    <td>Отсутствует</td>
+                                    <td><span class="status-error">✗</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Позиционирование блога</strong></td>
+                                    <td>«Единственная интегрированная экспертная платформа»</td>
+                                    <td>Обычный корпоративный блог</td>
+                                    <td><span class="status-error">✗</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ЦА: CEO-визионеры</strong></td>
+                                    <td>Отдельный контент для сегмента</td>
+                                    <td>Слабо выражен</td>
+                                    <td><span class="status-warning">⚠</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">GAP: Баланс авторов</h3>
+                        <span class="card-badge danger">Критический</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="kpi-row">
+                            <span class="kpi-label">Топ-менеджеры клиентов</span>
+                            <div class="kpi-values">
+                                <span class="kpi-current">~15%</span>
+                                <span class="kpi-target">→ <span>50%</span></span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill" style="width: 15%; background: var(--danger);"></div>
+                            </div>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Консультанты BITOBE</span>
+                            <div class="kpi-values">
+                                <span class="kpi-current">~75%</span>
+                                <span class="kpi-target">→ <span>40%</span></span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill warning" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                        <div class="kpi-row">
+                            <span class="kpi-label">Внешние партнёры</span>
+                            <div class="kpi-values">
+                                <span class="kpi-current">~10%</span>
+                                <span class="kpi-target">→ <span>10%</span></span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill success" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        <div class="insight-box">
+                            <strong>Проблема:</strong> Блог воспринимается как корпоративный, а не как платформа сообщества топ-менеджеров.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid" style="margin-top: 2rem;">
+                <div class="card featured-bottom">
+                    <div class="card-header">
+                        <h3 class="card-title">GAP: Интеграция онлайн-оффлайн</h3>
+                        <span class="card-badge danger">20%</span>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Метрика (из концепции)</th>
+                                    <th>Целевое</th>
+                                    <th>Текущее</th>
+                                    <th>Разрыв</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Статьи, связанные с событиями</td>
+                                    <td class="highlight">>40%</td>
+                                    <td>~5-10%</td>
+                                    <td><span class="status-error">-30%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Конверсия читателей в участников</td>
+                                    <td class="highlight">>15%</td>
+                                    <td>Не измеряется</td>
+                                    <td><span class="status-error">N/A</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Время: событие → публикация</td>
+                                    <td class="highlight"><1 недели</td>
+                                    <td>Нет процесса</td>
+                                    <td><span class="status-error">✗</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Видеозаписи выступлений</td>
+                                    <td class="highlight">Регулярно</td>
+                                    <td>Единичные</td>
+                                    <td><span class="status-warning">⚠</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="insight-box" style="margin: 1rem;">
+                            <strong>Вывод:</strong> Концепция «экосистемы» не реализована. Блог и оффлайн-события существуют параллельно, а не интегрированно.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">GAP: Категория «Оценка» (ЭРА)</h3>
+                        <span class="card-badge danger">Флагман недопредставлен</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="score-display" style="background: rgba(166, 61, 61, 0.1);">
+                            <div class="score-circle" style="background: var(--danger);">6%</div>
+                            <div class="score-details">
+                                <h4>Критический дисбаланс</h4>
+                                <p>ЭРА — флагманский продукт BITOBE, альтернатива Hogan. При этом категория «Оценка» составляет лишь 6% контента блога (~30 статей из 520+).</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <div class="kpi-row">
+                                <span class="kpi-label">Текущая доля</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current">6%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Целевая доля</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current" style="color: var(--success);">15-20%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-row">
+                                <span class="kpi-label">Требуется статей</span>
+                                <div class="kpi-values">
+                                    <span class="kpi-current" style="color: var(--accent);">+50-70</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Plan -->
+            <div class="card featured" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">План устранения разрывов</h3>
+                    <span class="card-badge success">Приоритеты</span>
+                </div>
+                <div class="card-body">
+                    <div class="cards-grid-3" style="margin-bottom: 0;">
+                        <div>
+                            <h4 style="color: var(--danger); margin-bottom: 1rem;">🔴 Фаза 1 (0-30 дней)</h4>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority high">1</div>
+                                <div class="recommendation-content">
+                                    <h4>Обновить слоган блога</h4>
+                                    <p>«Экспертная платформа российского менеджмента»</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority high">2</div>
+                                <div class="recommendation-content">
+                                    <h4>Добавить «Made in Russia»</h4>
+                                    <p>Интегрировать ключевое сообщение на главную</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority high">3</div>
+                                <div class="recommendation-content">
+                                    <h4>Контент-план для ЭРА</h4>
+                                    <p>8 статей за 2 месяца</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--warning); margin-bottom: 1rem;">🟡 Фаза 2 (30-90 дней)</h4>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">4</div>
+                                <div class="recommendation-content">
+                                    <h4>Процесс «Событие → Статья»</h4>
+                                    <p>Публикация за 7 дней после события</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">5</div>
+                                <div class="recommendation-content">
+                                    <h4>Программа внешних авторов</h4>
+                                    <p>Привлечение топ-менеджеров клиентов</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority medium">6</div>
+                                <div class="recommendation-content">
+                                    <h4>ТГ: «Инсайты с событий»</h4>
+                                    <p>Новая еженедельная рубрика</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--success); margin-bottom: 1rem;">🟢 Фаза 3 (90-180 дней)</h4>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority low">7</div>
+                                <div class="recommendation-content">
+                                    <h4>Трансформация в Академию</h4>
+                                    <p>Образовательные модули из серий</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority low">8</div>
+                                <div class="recommendation-content">
+                                    <h4>Подкаст «Архитекторы корпораций»</h4>
+                                    <p>Видео-интервью с CEO клиентов</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item">
+                                <div class="recommendation-priority low">9</div>
+                                <div class="recommendation-content">
+                                    <h4>CRM-интеграция</h4>
+                                    <p>Отслеживание ROI контента</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Target State -->
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Целевая модель через 6 месяцев</h3>
+                </div>
+                <div class="card-body">
+                    <div class="comparison-row header">
+                        <div>Параметр</div>
+                        <div>Сейчас</div>
+                        <div>Через 6 мес</div>
+                        <div>Изменение</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Соответствие стратегии</div>
+                        <div class="comparison-value">36%</div>
+                        <div class="comparison-value highlight">70-80%</div>
+                        <div class="comparison-value" style="color: var(--success);">+100%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Категория «Оценка»</div>
+                        <div class="comparison-value">6%</div>
+                        <div class="comparison-value highlight">15-20%</div>
+                        <div class="comparison-value" style="color: var(--success);">+150%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Внешние авторы</div>
+                        <div class="comparison-value">~15%</div>
+                        <div class="comparison-value highlight">40-50%</div>
+                        <div class="comparison-value" style="color: var(--success);">+200%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Статьи от событий</div>
+                        <div class="comparison-value">~10%</div>
+                        <div class="comparison-value highlight">40%+</div>
+                        <div class="comparison-value" style="color: var(--success);">+300%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Позиционирование</div>
+                        <div class="comparison-value">Отсутствует</div>
+                        <div class="comparison-value highlight">Интегрировано</div>
+                        <div class="comparison-value" style="color: var(--success);">✓</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SWOT Section -->
+        <section id="swot" class="section">
+            <h2 class="section-title">SWOT-анализ</h2>
+            
+            <div class="swot-grid">
+                <div class="swot-card">
+                    <h4>Сильные стороны</h4>
+                    <ul>
+                        <li>20-летняя экспертиза, 1500+ проектов</li>
+                        <li>Уникальный продукт ЭРА (замена Hogan)</li>
+                        <li>520+ качественных статей в блоге</li>
+                        <li>Стратегическое позиционирование разработано</li>
+                        <li>8+ публичных спикеров-экспертов</li>
+                        <li>Активный Telegram (6.2K подписчиков)</li>
+                        <li>ERR 11-16% — выше среднего B2B</li>
+                        <li>Портфолио оффлайн-событий</li>
+                        <li>Российский фокус и адаптация</li>
+                        <li>Доказанный формат-лидер (#пятница)</li>
+                    </ul>
+                </div>
+
+                <div class="swot-card">
+                    <h4>Слабые стороны</h4>
+                    <ul>
+                        <li><strong>Стратегия не транслируется в контент</strong></li>
+                        <li><strong>Экосистема онлайн-оффлайн не работает</strong></li>
+                        <li><strong>Баланс авторов нарушен (15% vs 50%)</strong></li>
+                        <li>sitemap.xml не работает (500 Error)</li>
+                        <li>Нет Schema.org разметки</li>
+                        <li>Отсутствует email-подписка</li>
+                        <li>Категория «Оценка» — только 6%</li>
+                        <li>Нет измерения ROI контента</li>
+                        <li>Слабая внутренняя перелинковка</li>
+                        <li>Контент для CEO-визионеров слабый</li>
+                    </ul>
+                </div>
+
+                <div class="swot-card">
+                    <h4>Возможности</h4>
+                    <ul>
+                        <li><strong>Реализовать концепцию экосистемы</strong></li>
+                        <li><strong>Привлечь топ-менеджеров клиентов</strong></li>
+                        <li>Уход западных конкурентов (Hogan)</li>
+                        <li>AI в HR — актуальная тема</li>
+                        <li>Трансформация в Академию BITOBE</li>
+                        <li>Подкаст с CEO клиентов</li>
+                        <li>LinkedIn для B2B-аудитории</li>
+                        <li>Интерактивные тесты для лидогенерации</li>
+                        <li>Кросс-промо с бизнес-школами</li>
+                        <li>Достижение ТОП-3 RAEX к 2030</li>
+                    </ul>
+                </div>
+
+                <div class="swot-card">
+                    <h4>Угрозы</h4>
+                    <ul>
+                        <li><strong>Затягивание реализации стратегии</strong></li>
+                        <li>Конкуренция HR-каналов</li>
+                        <li>Тренд на short-form контент</li>
+                        <li>Зависимость от Telegram</li>
+                        <li>Устаревание архива 2020-2022</li>
+                        <li>AI-контент конкурентов</li>
+                        <li>Экономическая нестабильность</li>
+                        <li>Потеря экспертов-спикеров</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card featured" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Конкурентные преимущества (из бренд-платформы)</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Преимущество</th>
+                                <th>Описание</th>
+                                <th>Реализация в контенте</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Продукт ЭРА</strong></td>
+                                <td>Уникальная российская система оценки</td>
+                                <td><span class="status-error">Недопредставлен (6%)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>20-летний опыт</strong></td>
+                                <td>1500+ проектов, глубокая экспертиза</td>
+                                <td><span class="status-ok">Транслируется частично</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Made in Russia</strong></td>
+                                <td>Российские решения для глобальных вызовов</td>
+                                <td><span class="status-error">Не транслируется</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Экосистема контента</strong></td>
+                                <td>Онлайн + оффлайн интеграция</td>
+                                <td><span class="status-error">Не реализована</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Топ-менеджеры как авторы</strong></td>
+                                <td>Клиенты — соавторы контента</td>
+                                <td><span class="status-warning">15% вместо 50%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategy Section -->
+        <section id="strategy" class="section">
+            <h2 class="section-title">Стратегия развития (из бренд-платформы)</h2>
+            
+            <!-- Mission and Vision -->
+            <div class="exec-summary" style="margin-bottom: 2rem;">
+                <h2>Миссия и Видение BITOBE</h2>
+                <p>
+                    <strong>Миссия:</strong> Создаём будущее страны, преображая корпорации.<br>
+                    <strong>Видение:</strong> Стать ведущей консалтинговой компанией России по организационным трансформациям к 2030 году.
+                </p>
+                <div class="exec-highlights">
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">ТОП-3</div>
+                        <div class="exec-highlight-label">RAEX к 2030</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">>80%</div>
+                        <div class="exec-highlight-label">Узнаваемость бренда</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">>70</div>
+                        <div class="exec-highlight-label">NPS балов</div>
+                    </div>
+                    <div class="exec-highlight">
+                        <div class="exec-highlight-value">>400%</div>
+                        <div class="exec-highlight-label">ROI блога к 2027</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card featured" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Стратегические цели контентных каналов</h3>
+                </div>
+                <div class="card-body">
+                    <div class="comparison-row header">
+                        <div>Метрика (из бренд-платформы)</div>
+                        <div>Текущее</div>
+                        <div>Цель</div>
+                        <div>Срок</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Telegram подписчики</div>
+                        <div class="comparison-value">6,230</div>
+                        <div class="comparison-value highlight">10,000</div>
+                        <div class="comparison-value">2025</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Лиды с контента/мес</div>
+                        <div class="comparison-value">—</div>
+                        <div class="comparison-value highlight">500+</div>
+                        <div class="comparison-value">2027</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Конверсия лидов в клиентов</div>
+                        <div class="comparison-value">—</div>
+                        <div class="comparison-value highlight">>15%</div>
+                        <div class="comparison-value">2027</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Узнаваемость бренда</div>
+                        <div class="comparison-value">~20%</div>
+                        <div class="comparison-value highlight">>80%</div>
+                        <div class="comparison-value">2030</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Баланс авторов (внешние)</div>
+                        <div class="comparison-value">~15%</div>
+                        <div class="comparison-value highlight">50%</div>
+                        <div class="comparison-value">2026</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Интегрированный контент</div>
+                        <div class="comparison-value">~10%</div>
+                        <div class="comparison-value highlight">>40%</div>
+                        <div class="comparison-value">2026</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card featured-bottom">
+                    <div class="card-header">
+                        <h3 class="card-title">Контент-микс (неделя)</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>День</th>
+                                    <th>Формат</th>
+                                    <th>Рубрика</th>
+                                    <th>Цель</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ПН</strong></td>
+                                    <td>Аналитика</td>
+                                    <td>#рынок_труда</td>
+                                    <td>SEO</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ВТ</strong></td>
+                                    <td>Видео</td>
+                                    <td>#минутка_рефлексии</td>
+                                    <td>Вовлечённость</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>СР</strong></td>
+                                    <td>Кейс</td>
+                                    <td>#от_первого_лица</td>
+                                    <td>Social proof</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ЧТ</strong></td>
+                                    <td>Интерактив</td>
+                                    <td>Quiz, Опрос</td>
+                                    <td>Обратная связь</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ПТ</strong></td>
+                                    <td>Юмор</td>
+                                    <td>#пятница</td>
+                                    <td>Виральность</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>СБ</strong></td>
+                                    <td>Философия</td>
+                                    <td>#философия</td>
+                                    <td>Эмоции</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ВС</strong></td>
+                                    <td>Дайджест</td>
+                                    <td>Новая рубрика</td>
+                                    <td>Удержание</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Приоритеты: Соответствие стратегии</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">1</div>
+                            <div class="recommendation-content">
+                                <h4>Транслировать позиционирование</h4>
+                                <p>Обновить слоганы, добавить «Made in Russia»</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">2</div>
+                            <div class="recommendation-content">
+                                <h4>Усилить категорию ЭРА</h4>
+                                <p>С 6% до 15-20% контента</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority high">3</div>
+                            <div class="recommendation-content">
+                                <h4>Интеграция онлайн-оффлайн</h4>
+                                <p>40% статей от событий</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority medium">4</div>
+                            <div class="recommendation-content">
+                                <h4>Привлечь внешних авторов</h4>
+                                <p>50% топ-менеджеры клиентов</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority medium">5</div>
+                            <div class="recommendation-content">
+                                <h4>Техническое SEO</h4>
+                                <p>Sitemap, Schema.org, email-подписка</p>
+                            </div>
+                        </div>
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority low">6</div>
+                            <div class="recommendation-content">
+                                <h4>Академия BITOBE</h4>
+                                <p>Трансформация блога к 2027</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">ROI-прогноз</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Сценарий</th>
+                                <th>Инвестиции/год</th>
+                                <th>Лиды</th>
+                                <th>Клиенты</th>
+                                <th>Выручка</th>
+                                <th>ROI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Минимальный</strong></td>
+                                <td>300K ₽</td>
+                                <td>200</td>
+                                <td>10</td>
+                                <td>5M ₽</td>
+                                <td class="highlight">1,567%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Оптимальный</strong></td>
+                                <td>3.1M ₽</td>
+                                <td>600</td>
+                                <td>30</td>
+                                <td>15M ₽</td>
+                                <td class="highlight">384%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section id="roadmap" class="section">
+            <h2 class="section-title">Roadmap: Приведение в соответствие со стратегией</h2>
+            
+            <div class="cards-grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Месяц 1</h3>
+                        <span class="card-badge danger">Критические разрывы</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item completed">
+                                <div class="timeline-content">
+                                    <h4>Неделя 1</h4>
+                                    <p>Обновить позиционирование блога</p>
+                                </div>
+                                <div class="timeline-date">«Экспертная платформа»</div>
+                            </div>
+                            <div class="timeline-item completed">
+                                <div class="timeline-content">
+                                    <h4>Неделя 2</h4>
+                                    <p>Made in Russia + sitemap + Schema</p>
+                                </div>
+                                <div class="timeline-date">Техническое SEO</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 3</h4>
+                                    <p>Контент-план категории ЭРА</p>
+                                </div>
+                                <div class="timeline-date">8 статей за 2 мес</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 4</h4>
+                                    <p>Email-подписка + лид-магнит</p>
+                                </div>
+                                <div class="timeline-date">«Чек-лист оценки»</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Месяц 2</h3>
+                        <span class="card-badge warning">Экосистема</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 5</h4>
+                                    <p>Процесс «Событие → Статья»</p>
+                                </div>
+                                <div class="timeline-date"><7 дней</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 6</h4>
+                                    <p>ТГ: «Инсайты с событий»</p>
+                                </div>
+                                <div class="timeline-date">Еженедельно</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 7</h4>
+                                    <p>Программа внешних авторов</p>
+                                </div>
+                                <div class="timeline-date">Топ-менеджеры</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 8</h4>
+                                    <p>Страница «Наши эксперты»</p>
+                                </div>
+                                <div class="timeline-date">E-E-A-T</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Месяц 3</h3>
+                        <span class="card-badge success">Масштабирование</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 9</h4>
+                                    <p>Видео-интервью с клиентами</p>
+                                </div>
+                                <div class="timeline-date">Кейсы ЭРА</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 10</h4>
+                                    <p>Коллаборации (5 каналов)</p>
+                                </div>
+                                <div class="timeline-date">+300 подписчиков</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 11</h4>
+                                    <p>CRM-интеграция</p>
+                                </div>
+                                <div class="timeline-date">Измерение ROI</div>
+                            </div>
+                            <div class="timeline-item pending">
+                                <div class="timeline-content">
+                                    <h4>Неделя 12</h4>
+                                    <p>Оценка соответствия</p>
+                                </div>
+                                <div class="timeline-date">Цель: 60%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card featured" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Ожидаемые результаты за 90 дней</h3>
+                </div>
+                <div class="card-body">
+                    <div class="comparison-row header">
+                        <div>Метрика</div>
+                        <div>Было</div>
+                        <div>Станет</div>
+                        <div>Изменение</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Соответствие стратегии</div>
+                        <div class="comparison-value">36%</div>
+                        <div class="comparison-value highlight">55-60%</div>
+                        <div class="comparison-value" style="color: var(--success);">+65%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Категория ЭРА</div>
+                        <div class="comparison-value">6%</div>
+                        <div class="comparison-value highlight">10-12%</div>
+                        <div class="comparison-value" style="color: var(--success);">+80%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Статьи от событий</div>
+                        <div class="comparison-value">~10%</div>
+                        <div class="comparison-value highlight">25-30%</div>
+                        <div class="comparison-value" style="color: var(--success);">+150%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Внешние авторы</div>
+                        <div class="comparison-value">~15%</div>
+                        <div class="comparison-value highlight">25-30%</div>
+                        <div class="comparison-value" style="color: var(--success);">+80%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-metric">Email-база</div>
+                        <div class="comparison-value">0</div>
+                        <div class="comparison-value highlight">500-800</div>
+                        <div class="comparison-value" style="color: var(--success);">Новая</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Долгосрочный план -->
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Долгосрочные цели (из дорожной карты 2025-2028)</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Инициатива</th>
+                                <th>Срок</th>
+                                <th>Результат</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Персональный бренд партнёров</strong></td>
+                                <td>0-12 мес</td>
+                                <td>Thought leadership в ТГ</td>
+                                <td><span class="status-warning">В процессе</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Блог → Академия BITOBE</strong></td>
+                                <td>12-24 мес</td>
+                                <td>Образовательные модули</td>
+                                <td><span class="status-warning">Планируется</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Цифровые HR-продукты</strong></td>
+                                <td>12-24 мес</td>
+                                <td>ИИ-диагностика, платформы</td>
+                                <td><span class="status-warning">Планируется</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Экосистемное партнёрство</strong></td>
+                                <td>12-24 мес</td>
+                                <td>Сеть IT и бизнес-школ</td>
+                                <td><span class="status-warning">Планируется</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Международная экспансия</strong></td>
+                                <td>24-36 мес</td>
+                                <td>СНГ и дружественные страны</td>
+                                <td><span class="status-warning">Планируется</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Бюджет</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Статья</th>
+                                <th>Минимальный</th>
+                                <th>Оптимальный</th>
+                                <th>Описание</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Контент-менеджер</td>
+                                <td>0 (внутр.)</td>
+                                <td>80K ₽/мес</td>
+                                <td>Выделенный специалист</td>
+                            </tr>
+                            <tr>
+                                <td>Дизайнер</td>
+                                <td>0 (внутр.)</td>
+                                <td>30K ₽/мес</td>
+                                <td>Инфографика</td>
+                            </tr>
+                            <tr>
+                                <td>Видео</td>
+                                <td>20K ₽/мес</td>
+                                <td>50K ₽/мес</td>
+                                <td>#минутка_рефлексии</td>
+                            </tr>
+                            <tr>
+                                <td>Копирайтер</td>
+                                <td>0</td>
+                                <td>40K ₽/мес</td>
+                                <td>Тексты, сценарии</td>
+                            </tr>
+                            <tr>
+                                <td>Продвижение</td>
+                                <td>0</td>
+                                <td>50K ₽/мес</td>
+                                <td>Telegram Ads</td>
+                            </tr>
+                            <tr>
+                                <td>Инструменты</td>
+                                <td>5K ₽/мес</td>
+                                <td>10K ₽/мес</td>
+                                <td>TGStat, Telemetr</td>
+                            </tr>
+                            <tr style="background: var(--light); font-weight: 600;">
+                                <td>ИТОГО</td>
+                                <td class="highlight">25K ₽/мес</td>
+                                <td class="highlight">260K ₽/мес</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-text">
+                BITOBE Analytics Dashboard — 29 января 2026
+            </div>
+            <div class="footer-links">
+                <a href="https://t.me/bitobenewera" target="_blank">@bitobenewera</a>
+                <a href="https://blog.bitobe.ru" target="_blank">blog.bitobe.ru</a>
+                <a href="https://bitobe.ru" target="_blank">bitobe.ru</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.section).classList.add('active');
+            });
+        });
+
+        // Sub-navigation for content section
+        document.querySelectorAll('.sub-nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.sub-nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content-sub-section').forEach(s => s.style.display = 'none');
+                
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-content-tab');
+                document.getElementById(targetId).style.display = 'block';
+            });
+        });
+
+        // Chart colors - BITOBE brand
+        const chartColors = {
+            primary: '#19194c',
+            primaryLight: 'rgba(25, 25, 76, 0.15)',
+            accent: '#be9176',
+            accentLight: 'rgba(190, 145, 118, 0.2)',
+            gray: '#7a899a',
+            grayLight: 'rgba(122, 137, 154, 0.2)',
+            success: '#2d7a5f',
+            warning: '#c4842d'
+        };
+
+        Chart.defaults.font.family = "'Onest', sans-serif";
+        Chart.defaults.color = chartColors.gray;
+
+        // Engagement Chart
+        const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+        new Chart(engagementCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Мин.', 'Среднее', 'Макс.', 'Мин.', 'Среднее', 'Макс.'],
+                datasets: [{
+                    label: 'Просмотры',
+                    data: [168, 850, 3940, null, null, null],
+                    backgroundColor: chartColors.primary,
+                    borderRadius: 6
+                }, {
+                    label: 'Реакции',
+                    data: [null, null, null, 5, 15, 46],
+                    backgroundColor: chartColors.accent,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'top',
+                        labels: { padding: 20, usePointStyle: true }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(25, 25, 76, 0.06)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Content Distribution Chart
+        const contentDistCtx = document.getElementById('contentDistributionChart').getContext('2d');
+        new Chart(contentDistCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Фото (583)', 'Видео (132)', 'Файлы (61)', 'Ссылки (1.1K)'],
+                datasets: [{
+                    data: [583, 132, 61, 1100],
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.accent,
+                        chartColors.gray,
+                        chartColors.success
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 16, usePointStyle: true }
+                    }
+                }
+            }
+        });
+
+        // Categories Chart
+        const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+        new Chart(categoriesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Развитие людей', 'Изменения', 'Управление', 'Коммуникации', 'Команды', 'Оценка'],
+                datasets: [{
+                    label: 'Количество статей',
+                    data: [180, 110, 100, 80, 40, 30],
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.primary,
+                        chartColors.primary,
+                        chartColors.primary,
+                        chartColors.primary,
+                        chartColors.accent
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(25, 25, 76, 0.06)' }
+                    },
+                    y: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // TG Categories Chart
+        const tgCategoriesCtx = document.getElementById('tgCategoriesChart').getContext('2d');
+        new Chart(tgCategoriesCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['HR (30%)', 'Лидерство (20%)', 'ЭРА (15%)', 'AI (10%)', 'Мероприятия (10%)', 'Философия (10%)', 'Юбилей (5%)'],
+                datasets: [{
+                    data: [30, 20, 15, 10, 10, 10, 5],
+                    backgroundColor: [
+                        'rgba(25, 25, 76, 0.85)',
+                        'rgba(190, 145, 118, 0.85)',
+                        'rgba(45, 122, 95, 0.85)',
+                        'rgba(122, 137, 154, 0.85)',
+                        'rgba(25, 25, 76, 0.5)',
+                        'rgba(190, 145, 118, 0.5)',
+                        'rgba(122, 137, 154, 0.5)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { padding: 12, usePointStyle: true, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Blog Categories Chart
+        const blogCategoriesCtx = document.getElementById('blogCategoriesChart');
+        if (blogCategoriesCtx) {
+            new Chart(blogCategoriesCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Развитие людей', 'Изменения', 'Система управления', 'Коммуникации', 'Команды', 'Оценка (ЭРА)'],
+                    datasets: [{
+                        label: 'Статей',
+                        data: [180, 110, 100, 80, 40, 30],
+                        backgroundColor: [
+                            'rgba(25, 25, 76, 0.85)',
+                            'rgba(45, 122, 95, 0.85)',
+                            'rgba(190, 145, 118, 0.85)',
+                            'rgba(122, 137, 154, 0.85)',
+                            'rgba(25, 25, 76, 0.5)',
+                            'rgba(166, 61, 61, 0.85)'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = ['35%', '21%', '19%', '15%', '8%', '6%'];
+                                    return context.raw + ' статей (' + labels[context.dataIndex] + ')';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(25, 25, 76, 0.06)' }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Format Effectiveness Chart
+        const formatCtx = document.getElementById('formatEffectivenessChart').getContext('2d');
+        new Chart(formatCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Охват', 'Реакции', 'Виральность', 'Вовлечённость', 'Конверсия'],
+                datasets: [{
+                    label: '#пятница',
+                    data: [100, 90, 95, 85, 40],
+                    backgroundColor: 'rgba(190, 145, 118, 0.2)',
+                    borderColor: chartColors.accent,
+                    borderWidth: 2,
+                    pointBackgroundColor: chartColors.accent
+                }, {
+                    label: 'Притчи',
+                    data: [70, 95, 60, 90, 50],
+                    backgroundColor: 'rgba(25, 25, 76, 0.15)',
+                    borderColor: chartColors.primary,
+                    borderWidth: 2,
+                    pointBackgroundColor: chartColors.primary
+                }, {
+                    label: 'Экспертные статьи',
+                    data: [60, 50, 30, 70, 80],
+                    backgroundColor: 'rgba(45, 122, 95, 0.15)',
+                    borderColor: chartColors.success,
+                    borderWidth: 2,
+                    pointBackgroundColor: chartColors.success
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 16, usePointStyle: true }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { stepSize: 20, display: false },
+                        grid: { color: 'rgba(25, 25, 76, 0.08)' },
+                        angleLines: { color: 'rgba(25, 25, 76, 0.08)' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
